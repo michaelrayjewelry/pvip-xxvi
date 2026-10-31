@@ -121,18 +121,19 @@ function quickLook(file) {
   a.remove();
 }
 
-const isMobile = isIOS || /Android/i.test(ua);
-
-// Phones: "View on your card" opens the camera page, which locks the ring to the card and blacks out the room.
-// "or on the table" uses the phone's own AR viewer (Quick Look on iPhone, Scene Viewer / WebXR on Android).
 function offerAR() {
-  if (!isMobile) return;
-  main.hidden = false; noAr.hidden = true;
-  if ((isIOS && quickLookOK) || mv.canActivateAR) table.hidden = false;
+  if (isIOS && quickLookOK) {
+    main.hidden = false; table.hidden = false; noAr.hidden = true;
+    return;
+  }
+  if (mv.canActivateAR) {   // Android (Scene Viewer / WebXR) cannot anchor to the card, so the ring goes on the table
+    main.textContent = 'View in your space';
+    main.hidden = false; noAr.hidden = true;
+  }
 }
 
-main.addEventListener('click', () => { location.href = 'ar.html'; });
-table.addEventListener('click', () => (isIOS && quickLookOK) ? quickLook('phantom-signet-on-table.usdz') : mv.activateAR());
+main.addEventListener('click', () => (isIOS && quickLookOK) ? quickLook('phantom-signet-on-card.usdz') : mv.activateAR());
+table.addEventListener('click', () => quickLook('phantom-signet-on-table.usdz'));
 
 mv.addEventListener('progress', (e) => {
   const p = e.detail.totalProgress;
